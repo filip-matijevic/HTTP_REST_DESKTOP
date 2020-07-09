@@ -115,12 +115,8 @@ void respond(int clientID) {
 		int isSame = strcmp(uri, "/favicon.ico");
 
 		if (isSame != 0) {
-			printf("[%s] %s\n", method, uri);
+			printf("[%s] %s\n\n", method, uri);
 			char *reply = generateResponseMessage(uri);
-
-			if (reply != NULL) {
-				printf("%s\n", reply);
-			}
 			send(connectedClients[clientID], reply, strlen(reply), 0);
 		}
 	}
