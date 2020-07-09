@@ -21,12 +21,18 @@
     <ClCompile Include="httpHost.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="responseUtility.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="httpDependency.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="httpHost.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="responseUtility.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

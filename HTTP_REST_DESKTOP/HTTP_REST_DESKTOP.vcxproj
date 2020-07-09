@@ -123,10 +123,12 @@
   <ItemGroup>
     <ClCompile Include="httpHost.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="responseUtility.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="httpDependency.h" />
     <ClInclude Include="httpHost.h" />
+    <ClInclude Include="responseUtility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

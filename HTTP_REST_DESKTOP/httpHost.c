@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include "httpDependency.h"
 #include "httpHost.h"
+#include "responseUtility.h"
 
 #define MAX_CONNECTIONS 100
 int connectedClients[MAX_CONNECTIONS];
 int listenID;
 char *messageBuffer;
-char *method, *uri, *port;
+char *method, *uri;
 
 
 void startHttpServer(const char *port);
@@ -70,10 +71,6 @@ void startHttpServer(const char *port) {
 		int option = 1;
 		listenID = socket(pointer->ai_family, pointer->ai_socktype, 0);
 
-		if (listenID == INVALID_SOCKET) {
-			printf("SOCKET BINDING FAILED : %d\n", WSAGetLastError());
-		}
-
 		int socketOptions = setsockopt(listenID, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 
 		printf("SOCKET OPTIONS STATUS : \t%d\n", socketOptions);
@@ -83,9 +80,6 @@ void startHttpServer(const char *port) {
 		}
 		int bindID = bind(listenID, pointer->ai_addr, pointer->ai_addrlen);
 		printf("BINDING STATUS : \t\t%d\n", bindID);
-		if (bindID == SOCKET_ERROR) {
-			printf("BINDING FAILED : %d\n", WSAGetLastError());
-		}
 		if (bindID == 0) {
 			printf("---------------------------------\n");
 			break;
@@ -112,15 +106,23 @@ void respond(int clientID) {
 	messageBuffer = malloc(65535);
 	int receivedID = recv(connectedClients[clientID], messageBuffer, 65535, 0);
 
-
 	if (receivedID > 0) {
 		messageBuffer[receivedID] = '\0';
 
 		method = strtok(messageBuffer, " \t\r\n");
 		uri = strtok(NULL, " \t");
-		port = strtok(NULL, " \t\r\n");
+		
+		int isSame = strcmp(uri, "/favicon.ico");
 
-		fprintf(stderr, "[%s] %s\n", method, uri);
+		if (isSame != 0) {
+			printf("[%s] %s\n", method, uri);
+			char *reply = generateResponseMessage(uri);
+
+			if (reply != NULL) {
+				printf("%s\n", reply);
+			}
+			send(connectedClients[clientID], reply, strlen(reply), 0);
+		}
 	}
 
 	free(messageBuffer);
