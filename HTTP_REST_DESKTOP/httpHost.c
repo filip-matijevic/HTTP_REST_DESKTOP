@@ -8,7 +8,7 @@ int connectedClients[MAX_CONNECTIONS];
 
 HANDLE ThreadHandle[MAX_CONNECTIONS];
 int listenID;
-char *messageBuffer;
+//char *messageBuffer;
 //char *method, *uri;
 
 
@@ -109,7 +109,7 @@ void startHttpServer(const char *port) {
 DWORD WINAPI respond(int clientID) {
 
 	printf("START %d\n", clientID);
-	messageBuffer = malloc(65535);
+	char *messageBuffer = malloc(65535);
 	int receivedID = recv(connectedClients[clientID], messageBuffer, 65535, 0);
 
 	if (receivedID > 0) {
@@ -118,9 +118,10 @@ DWORD WINAPI respond(int clientID) {
 		char *method = strtok(messageBuffer, " \t\r\n");
 		char *uri = strtok(NULL, " \t");
 		
-
+		char *replyBuffer = malloc(10000);
 		char *reply = generateResponseMessage(uri);
 		send(connectedClients[clientID], reply, strlen(reply), 0);
+		free(replyBuffer);
 		/*
 		int isSame = strcmp(uri, "/favicon.ico");
 
