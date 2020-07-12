@@ -3,11 +3,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-char* generateResponseHeader(const char *content);
+char* generateResponseHeader(char *content);
 char* getEndpointOperation(char *content);
 int* getOperands(char *content);
 
-char* generateResponseHeader(char *buffer, char *content) {
+char* generateResponseHeader(char *content) {
 
 	char responseMessage[100000] = "HTTP/1.1 200 OK\n";
 	int contentLength = strlen(content) + 10;
@@ -22,7 +22,7 @@ char* generateResponseHeader(char *buffer, char *content) {
 	return responseMessage;
 }
 
-char* generateResponseMessage(char *buffer, char *content) {
+char* generateResponseMessage(char *content) {
 	if (strcmp(content, "/") == 0) {
 		return generateResponseHeader("Hello World");
 	}

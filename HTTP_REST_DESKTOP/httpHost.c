@@ -118,10 +118,9 @@ DWORD WINAPI respond(int clientID) {
 		char *method = strtok(messageBuffer, " \t\r\n");
 		char *uri = strtok(NULL, " \t");
 		
-		char *replyBuffer = malloc(10000);
+
 		char *reply = generateResponseMessage(uri);
 		send(connectedClients[clientID], reply, strlen(reply), 0);
-		free(replyBuffer);
 		/*
 		int isSame = strcmp(uri, "/favicon.ico");
 
