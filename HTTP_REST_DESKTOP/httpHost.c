@@ -5,14 +5,16 @@
 
 #define MAX_CONNECTIONS 100
 int connectedClients[MAX_CONNECTIONS];
+
+HANDLE ThreadHandle[MAX_CONNECTIONS];
 int listenID;
 char *messageBuffer;
-char *method, *uri;
+//char *method, *uri;
 
 
 void startHttpServer(const char *port);
 void resetConnections();
-void respond(int clientID);
+DWORD WINAPI respond(int clientID);
 
 
 
@@ -30,15 +32,18 @@ void connectionLoop(const char *PORT) {
 		connectedClients[connectionSlot] = accept(listenID, (struct sockaddr *) &clientaddr, &addressLength);
 
 		if (connectedClients[connectionSlot] < 0) {
-			//printf("Acceptance error\n");
+			printf("Acceptance error - probably no slots available\n");
 		}
 		else {
-			respond(connectionSlot);
-			//exit(0);
+			ThreadHandle[connectionSlot] = CreateThread(NULL, 0, respond, connectionSlot, 0, NULL);
 		}
+		WaitForMultipleObjects(MAX_CONNECTIONS, ThreadHandle, TRUE, INFINITE);
+
 
 		while (connectedClients[connectionSlot] != -1) {
+			//CloseHandle(ThreadHandle[connectionSlot]);
 			connectionSlot = (connectionSlot + 1) % MAX_CONNECTIONS;
+
 		}
 	}
 }
@@ -101,27 +106,36 @@ void startHttpServer(const char *port) {
 	}
 }
 
-void respond(int clientID) {
+DWORD WINAPI respond(int clientID) {
 
+	printf("START %d\n", clientID);
 	messageBuffer = malloc(65535);
 	int receivedID = recv(connectedClients[clientID], messageBuffer, 65535, 0);
 
 	if (receivedID > 0) {
 		messageBuffer[receivedID] = '\0';
 
-		method = strtok(messageBuffer, " \t\r\n");
-		uri = strtok(NULL, " \t");
+		char *method = strtok(messageBuffer, " \t\r\n");
+		char *uri = strtok(NULL, " \t");
 		
+
+		char *reply = generateResponseMessage(uri);
+		send(connectedClients[clientID], reply, strlen(reply), 0);
+		/*
 		int isSame = strcmp(uri, "/favicon.ico");
 
 		if (isSame != 0) {
-			printf("[%s] %s\n\n", method, uri);
+			//printf("[%s] %s\n\n", method, uri);
 			char *reply = generateResponseMessage(uri);
 			send(connectedClients[clientID], reply, strlen(reply), 0);
 		}
+		*/
 	}
 
 	free(messageBuffer);
+	printf("END   %d\n", clientID);
+	connectedClients[clientID] = -1;
+	CloseHandle(ThreadHandle[clientID]);
 }
 
 void resetConnections() {

@@ -18,7 +18,6 @@ char* generateResponseHeader(char *content) {
 	strcat(responseMessage, contentLengthString);
 	strcat(responseMessage, "\nConnection: keep-alive\n\n");
 	strcat(responseMessage, content);
-	//strcat(responseMessage, &content);
 
 	return responseMessage;
 }
@@ -42,9 +41,11 @@ char* generateResponseMessage(char *content) {
 			}
 			else {
 				char *arguments = strtok(NULL, "?");
-				printf("ARGUMENS %s\n", arguments);
-				getOperands(arguments);
-				return generateResponseHeader("THIS OPERATION IS AVAILABLE");
+				int *operands = getOperands(arguments);
+
+				char solution[10];
+				_itoa(calculate(selectedOperation, operands[0], operands[1]), solution, 10);
+				return generateResponseHeader(solution);
 			}
 		}
 		else {
@@ -88,12 +89,34 @@ int getEndpointOperationIndex(char *content) {
 	return -1;
 }
 
+int calculate(int operation, int a, int b) {
+	switch (operation)
+	{
+	case 0:
+		return a + b;
+		break;
+	case 1:
+		return a - b;
+		break;	
+	case 2:
+		return a * b;
+		break;
+	case 3:
+		return a / b;
+		break;
+	default:
+		break;
+	}
+}
+
 //This is not the best way to split a string, syntax trees would be good here
 int* getOperands(char *content) {				//A=3&B=4
 	int operandValues[3];
 	char* leftOperand[10];
 	char* rightOperand[10];
+
 	strcpy(leftOperand, strtok(content, "&"));	//*A=3[NULL]B=4
+
 	strcpy(rightOperand, strtok(NULL, "&"));	//A=3[NULL]*B=4
 
 	char *left = strtok(leftOperand, "=");		//*A[NULL]3
@@ -101,7 +124,7 @@ int* getOperands(char *content) {				//A=3&B=4
 	char *right = strtok(rightOperand, "=");	//*B[NULL]4
 	right = strtok(NULL, "=");					//B[NULL]*4
 
-	printf("%s\n", left);
-	printf("%s\n", right);
+	operandValues[0] = atoi(left);
+	operandValues[1] = atoi(right);
 	return operandValues;
 }
