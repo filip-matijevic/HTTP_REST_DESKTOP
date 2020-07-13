@@ -1,2 +1,2 @@
 #pragma once
-char* generateResponseMessage(char *content);
+char* generateResponseMessage(char * buffer, char *content);

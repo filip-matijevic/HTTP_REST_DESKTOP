@@ -35,6 +35,7 @@ void connectionLoop(const char *PORT) {
 			printf("Acceptance error - probably no slots available\n");
 		}
 		else {
+			printf("Connection slot %d\n", connectionSlot);
 			ThreadHandle[connectionSlot] = CreateThread(NULL, 0, respond, connectionSlot, 0, NULL);
 		}
 		WaitForMultipleObjects(MAX_CONNECTIONS, ThreadHandle, TRUE, INFINITE);
@@ -107,8 +108,6 @@ void startHttpServer(const char *port) {
 }
 
 DWORD WINAPI respond(int clientID) {
-
-	printf("START %d\n", clientID);
 	char *messageBuffer = malloc(65535);
 	int receivedID = recv(connectedClients[clientID], messageBuffer, 65535, 0);
 
@@ -119,21 +118,16 @@ DWORD WINAPI respond(int clientID) {
 		char *uri = strtok(NULL, " \t");
 		
 
-		char *reply = generateResponseMessage(uri);
-		send(connectedClients[clientID], reply, strlen(reply), 0);
-		/*
-		int isSame = strcmp(uri, "/favicon.ico");
 
-		if (isSame != 0) {
-			//printf("[%s] %s\n\n", method, uri);
-			char *reply = generateResponseMessage(uri);
-			send(connectedClients[clientID], reply, strlen(reply), 0);
-		}
-		*/
+		char *replyBuffer = malloc(10000);
+
+		char *reply = generateResponseMessage(replyBuffer, uri);
+
+		send(connectedClients[clientID], replyBuffer, strlen(replyBuffer), 0);
+		free(replyBuffer);
 	}
 
 	free(messageBuffer);
-	printf("END   %d\n", clientID);
 	connectedClients[clientID] = -1;
 	CloseHandle(ThreadHandle[clientID]);
 }

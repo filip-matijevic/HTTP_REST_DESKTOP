@@ -3,13 +3,17 @@
 #include <string.h>
 #include <stdlib.h>
 
-char* generateResponseHeader(char *content);
+char* generateResponseHeader(char *buffer, char *content);
 char* getEndpointOperation(char *content);
 int* getOperands(char *content);
+int isArgumentLineCorrect(char *content);
+char* generateBadRequest(char *buffer);
 
-char* generateResponseHeader(char *content) {
+char* generateResponseHeader(char *buffer, char *content) {
 
 	char responseMessage[100000] = "HTTP/1.1 200 OK\n";
+
+	//strcat(buffer, "HTTP/1.1 200 OK\n");
 	int contentLength = strlen(content) + 10;
 	char contentLengthString[200];
 	_itoa(contentLength, contentLengthString, 10);
@@ -18,13 +22,25 @@ char* generateResponseHeader(char *content) {
 	strcat(responseMessage, contentLengthString);
 	strcat(responseMessage, "\nConnection: keep-alive\n\nRESPONSE :");
 	strcat(responseMessage, content);
+
+	strcpy(buffer, responseMessage);
 	printf("RESPONSE %s\n", content);
-	return responseMessage;
+	//return responseMessage;
 }
 
-char* generateResponseMessage(char *content) {
+char* generateBadRequest(char *buffer) {
+	char responseMessage[100000] =	"HTTP/1.1 400\n"
+									"Content-Length: 11"
+									"Connection: close\n\n"
+									"Bad Request";
+
+
+	strcpy(buffer, responseMessage);
+}
+
+char* generateResponseMessage(char *buffer, char *content) {
 	if (strcmp(content, "/") == 0) {
-		return generateResponseHeader("Hello World");
+		return generateResponseHeader(buffer, "Hello World");
 	}
 	else {
 		//so, there is something
@@ -37,23 +53,31 @@ char* generateResponseMessage(char *content) {
 			int selectedOperation = getEndpointOperationIndex(operation);
 
 			if (selectedOperation == -1) {
-				return generateResponseHeader("ERROR 404: NOT FOUND");
+				return generateResponseHeader(buffer, "ERROR 404: NOT FOUND");
 			}
 			else {
 				char *arguments = strtok(NULL, "?");
 				int *operands = getOperands(arguments);
 
-				char solution[10];
-				_itoa(calculate(selectedOperation, operands[0], operands[1]), solution, 10);
-				return generateResponseHeader(solution);
+				if (operands[2] == -1) {
+					//SOMETHING IS WRONG WITH OPERANDS
+					return generateResponseHeader(buffer, "400 Bad Request");
+				}
+				else {
+					char solution[10];
+					_itoa(calculate(selectedOperation, operands[0], operands[1]), solution, 10);
+					return generateResponseHeader(buffer, solution);
+				}
+
+
 			}
 		}
 		else {
-			return generateResponseHeader("ERROR : ONLY ONE ENDPOINT LAYER SUPPORTED");
+			return generateResponseHeader(buffer, "ERROR : ONLY ONE ENDPOINT LAYER SUPPORTED");
 		}
 
 	}
-	return generateResponseHeader("ERROR : UNDEFINED");
+	return generateResponseHeader(buffer, "ERROR : UNDEFINED");
 }
 
 char* getEndpointOperation(char *content) {
@@ -112,6 +136,8 @@ int calculate(int operation, int a, int b) {
 //This is not the best way to split a string, syntax trees would be good here
 int* getOperands(char *content) {				//A=3&B=4
 	int operandValues[3];
+	operandValues[2] = isArgumentLineCorrect(content);
+	printf("%d\n", operandValues[2]);
 	char* leftOperand[10];
 	char* rightOperand[10];
 
@@ -127,4 +153,29 @@ int* getOperands(char *content) {				//A=3&B=4
 	operandValues[0] = atoi(left);
 	operandValues[1] = atoi(right);
 	return operandValues;
+}
+
+int isArgumentLineCorrect(char *content) {
+	int charIndex = 0;
+	int numberOfA = 0;
+	int numberOfB = 0;
+	
+
+	while (content[charIndex] != '\0') {
+		if (content[charIndex] == 'a') {
+			numberOfA++;
+		}
+
+		if (content[charIndex] == 'b') {
+			numberOfB++;
+		}
+		charIndex++;
+	}
+
+	if (numberOfA == 1 && numberOfB == 1) {
+		return 1;
+	}
+	else {
+		return -1;
+	}
 }
