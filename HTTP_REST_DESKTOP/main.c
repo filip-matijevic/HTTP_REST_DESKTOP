@@ -3,6 +3,12 @@
 
 int main(int argc, const char* argv[])
 {
-	connectionLoop(argv[1]);
+	if (argc < 2) {
+
+		connectionLoop("80");
+	}
+	else {
+		connectionLoop(argv[1]);
+	}
 	system("pause");
 }
